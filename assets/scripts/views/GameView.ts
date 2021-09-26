@@ -1,67 +1,71 @@
 import { HERO_COUNT, CAMPS, EventType } from '../common/Const';
 import EventManager from '../common/EventManager';
-import Tools from '../common/Tools';
 import Hero from '../prefab/Hero';
-import TableView from '../ui/TableView';
 
 const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class GameView extends cc.Component {
-	@property(TableView)
-	table: TableView = null;
+	@property(cc.Node)
+	table: cc.Node = null;
 
 	@property(cc.Prefab)
 	hero: cc.Prefab = null;
+
+	@property(cc.SpriteFrame)
+	leftSprite: cc.SpriteFrame = null;
+
+	@property(cc.SpriteFrame)
+	rightSprite: cc.SpriteFrame = null;
 
 	private leftList: Array<cc.Node> = [];
 	private rightList: Array<cc.Node> = [];
 	private isGaming: boolean = false;
 	onLoad() {
-		EventManager.on(EventType.TABLE_INIT_OVER, this.initHeros, this);
 		EventManager.on(EventType.HERO_ATTACK, this.doAttack, this);
 		EventManager.on(EventType.HERO_ATTACK_OVER, this.checkGameOver, this);
 	}
 
+	start() {
+		this.scheduleOnce(this.initHeros, 0.5);
+	}
+
 	onDestroy() {
-		EventManager.off(EventType.TABLE_INIT_OVER, this.initHeros, this);
 		EventManager.off(EventType.HERO_ATTACK, this.doAttack, this);
 		EventManager.off(EventType.HERO_ATTACK_OVER, this.checkGameOver, this);
 	}
 
 	initHeros() {
-		let rects = this.table.getRects();
-		let leftRects = rects.slice(0, 9);
-		let rightRects = rects.slice(9);
 		let id = 10000;
-		for (let i = 0; i < HERO_COUNT; ++i) {
+		for (let i = 0; i < HERO_COUNT; i++) {
 			let heroNode = cc.instantiate(this.hero);
 			let hero = heroNode.getComponent(Hero);
 			this.node.addChild(heroNode);
-			let rect: cc.Rect =
-				leftRects[Math.floor(Math.random() * leftRects.length)];
-			leftRects = leftRects.filter((r) => !r.equals(rect));
-			let wpos = this.table.node.convertToWorldSpaceAR(
-				cc.v2(rect.x + rect.width / 2, rect.y + rect.height / 2)
-			);
+
+			let rect: cc.Node = this.table.getChildByName('left' + i);
+
+			let wpos = this.table.convertToWorldSpaceAR(cc.v2(rect.x, rect.y));
 			let npos = this.node.convertToNodeSpaceAR(wpos);
+
 			hero.onInit(npos, ++id);
 			hero.camp = CAMPS.LEFT;
+			hero.bg.spriteFrame = this.leftSprite;
 			this.leftList.push(heroNode);
 		}
-		for (let i = 0; i < HERO_COUNT; ++i) {
+
+		for (let i = 0; i < HERO_COUNT; i++) {
 			let heroNode = cc.instantiate(this.hero);
 			let hero = heroNode.getComponent(Hero);
 			this.node.addChild(heroNode);
-			let rect: cc.Rect =
-				rightRects[Math.floor(Math.random() * rightRects.length)];
-			rightRects = rightRects.filter((r) => !r.equals(rect));
-			let wpos = this.table.node.convertToWorldSpaceAR(
-				cc.v2(rect.x + rect.width / 2, rect.y + rect.height / 2)
-			);
+
+			let rect: cc.Node = this.table.getChildByName('right' + i);
+
+			let wpos = this.table.convertToWorldSpaceAR(cc.v2(rect.x, rect.y));
 			let npos = this.node.convertToNodeSpaceAR(wpos);
+
 			hero.onInit(npos, ++id);
 			hero.camp = CAMPS.RIGHT;
+			hero.bg.spriteFrame = this.rightSprite;
 			this.rightList.push(heroNode);
 		}
 		this.isGaming = true;
@@ -71,14 +75,22 @@ export default class GameView extends cc.Component {
 		let data = event.getUserData();
 		let [camp, hero] = this.getAttackHero(data);
 		let target = this.getRandomTarget(camp);
+		// 如果找不到目标，游戏停止
 		if (!target) {
 			this.isGaming = false;
 			return;
 		}
+		// 攻击对方
 		hero.doAttack(target.pos);
+		// 对方被攻击的响应
 		target.onAttack(hero);
 	}
 
+	/**
+	 * 通过id找到攻击英雄
+	 * @param data
+	 * @returns
+	 */
 	getAttackHero(data: any): [CAMPS, Hero] {
 		let camp = data.camp;
 		let list, hero;
@@ -102,6 +114,11 @@ export default class GameView extends cc.Component {
 		return [camp, hero];
 	}
 
+	/**
+	 * 随机一个对方的英雄作为攻击目标
+	 * @param camp 随机
+	 * @returns
+	 */
 	getRandomTarget(camp: CAMPS): Hero {
 		let list, target;
 		switch (camp) {
@@ -128,6 +145,9 @@ export default class GameView extends cc.Component {
 		return target.getComponent(Hero);
 	}
 
+	/**
+	 * 判断游戏是否结束
+	 */
 	checkGameOver() {
 		let leftList = this.leftList.filter(
 			(n) => !n.getComponent(Hero).isdead
