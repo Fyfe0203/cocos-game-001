@@ -1,0 +1,110 @@
+// Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.  
+
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: vs
+      frag: fs
+      blendState:
+        targets:
+        - blend: true
+      rasterizerState:
+        cullMode: none
+      properties:
+        texture: { value: white }
+        alphaThreshold: { value: 0.5 }
+        u_uvOffset: { value: [0.5, 0.5, 0.5, 0.5] }
+        u_uvRotated: { value: 0.0 }
+        u_color: { value: [1.0, 1.0, 0.0, 0.0] }
+        u_action: { value: 0.0 }
+        u_baseColor: { value: [1.0, 1.0, 1.0, 1.0] }
+}%
+
+
+CCProgram vs %{
+  precision highp float;
+
+  #include <cc-global>
+  #include <cc-local>
+
+  in vec3 a_position;
+  in vec4 a_color;
+  out vec4 v_color;
+
+  #if USE_TEXTURE
+  in vec2 a_uv0;
+  out vec2 v_uv0;
+  #endif
+
+  void main () {
+    vec4 pos = vec4(a_position, 1);
+
+    #if CC_USE_MODEL
+    pos = cc_matViewProj * cc_matWorld * pos;
+    #else
+    pos = cc_matViewProj * pos;
+    #endif
+
+    #if USE_TEXTURE
+    v_uv0 = a_uv0;
+    #endif
+
+    v_color = a_color;
+
+    gl_Position = pos;
+  }
+}%
+
+
+CCProgram fs %{
+  precision highp float;
+
+  #include <cc-global>
+  #include <alpha-test>
+  #include <texture>
+
+  in vec4 v_color;
+
+  #if USE_TEXTURE
+  in vec2 v_uv0;
+  uniform sampler2D texture;
+  #endif
+
+  uniform BG {
+    vec4 u_uvOffset;
+    vec4 u_color;
+    vec4 u_baseColor;
+    float u_uvRotated;
+    float u_action;
+  };
+
+  float rand(vec2 co) {
+      return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+      // return 1.0;
+  }
+
+  void main () {
+
+    vec2 uvOffset;
+    uvOffset.x = (v_uv0.x-u_uvOffset.x)/(u_uvOffset.z-u_uvOffset.x);
+    uvOffset.y = (v_uv0.y-u_uvOffset.y)/(u_uvOffset.w-u_uvOffset.y);
+    if(u_uvRotated > 0.5) {
+      float temp = uvOffset.x;
+      uvOffset.x = uvOffset.y;
+      uvOffset.y = 1.0 - temp;
+    }
+
+    vec4 o = u_baseColor;
+    vec2 seed = uvOffset;
+    if (u_action > 0.5) {
+      seed *= cc_time.x;
+    }
+    float r = rand(seed);
+    if (u_color.x > 0.5) o.r *= r;
+    if (u_color.y > 0.5) o.g *= r;
+    if (u_color.z > 0.5) o.b *= r;
+    if (u_color.w > 0.5) o.a *= r;
+
+    gl_FragColor = o;
+  }
+}%

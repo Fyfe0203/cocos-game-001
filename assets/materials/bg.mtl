@@ -1,0 +1,27 @@
+{
+  "__type__": "cc.Material",
+  "_name": "bg",
+  "_objFlags": 0,
+  "_native": "",
+  "_effectAsset": {
+    "__uuid__": "0a6a2116-0848-4cc8-bbff-a0da8d855b19"
+  },
+  "_techniqueIndex": 0,
+  "_techniqueData": {
+    "0": {
+      "defines": {
+        "USE_TEXTURE": true
+      },
+      "props": {
+        "u_color": {
+          "__type__": "cc.Vec4",
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "w": 0
+        },
+        "u_action": 0
+      }
+    }
+  }
+}
