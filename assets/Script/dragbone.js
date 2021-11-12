@@ -6,36 +6,48 @@ cc.Class({
             type: dragonBones.ArmatureDisplay,
             default: null,
         },
-        zui: {
+        head: {
             type: dragonBones.ArmatureDisplay,
             default: null,
         },
-        chibang: {
+        clothes: {
+            type: dragonBones.ArmatureDisplay,
+            default: null,
+        },
+        eye: {
             type: dragonBones.ArmatureDisplay,
             default: null,
         }
     },
 
     start() {
-        let robotArmature = this.robot.armature();
-        let robotSlot = robotArmature.getSlot("Rchibang");
-        let chibangSlot = robotArmature.getSlot("Lchibang");
 
         let factory = dragonBones.CCFactory.getInstance();
+        this.head.armatureName = 'head03'
         factory.replaceSlotDisplay(
-            this.zui.getArmatureKey(),
-            "chibang2",
-            "Lchibang2",
-            "Lchibang2",
-            robotSlot
+            this.head.getArmatureKey(),
+            "head03",
+            "head03",
+            "head03",
+            this.robot.armature().getSlot("head01")
         );
 
+        this.clothes.armatureName = 'clothes03'
         factory.replaceSlotDisplay(
-            this.zui.getArmatureKey(),
-            "chibang2",
-            "Rchibang2",
-            "Rchibang2",
-            chibangSlot
+            this.clothes.getArmatureKey(),
+            "clothes03",
+            "clothes03",
+            "clothes03",
+            this.robot.armature().getSlot("clothes01")
+        );
+
+        this.eye.armatureName = 'eye03'
+        factory.replaceSlotDisplay(
+            this.eye.getArmatureKey(),
+            "eye03",
+            "eye03",
+            "eye03",
+            this.robot.armature().getSlot("eye01")
         );
     },
 });
