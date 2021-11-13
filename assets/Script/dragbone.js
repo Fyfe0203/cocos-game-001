@@ -24,6 +24,8 @@ cc.Class({
 
         let factory = dragonBones.CCFactory.getInstance();
         this.head.armatureName = 'head03'
+        // this.head.animationName = 'wait'
+        // this.robot.armature().getSlot("head01").childArmature = factory.buildArmature('head03')
         factory.replaceSlotDisplay(
             this.head.getArmatureKey(),
             "head03",
@@ -32,14 +34,19 @@ cc.Class({
             this.robot.armature().getSlot("head01")
         );
 
+
         this.clothes.armatureName = 'clothes03'
-        factory.replaceSlotDisplay(
-            this.clothes.getArmatureKey(),
-            "clothes03",
-            "clothes03",
-            "clothes03",
-            this.robot.armature().getSlot("clothes01")
-        );
+        // this.clothes.animationName = 'wait'
+
+        // this.robot.armature().getSlot("clothes01").childArmature = factory.buildArmature('eye03')
+
+        // factory.replaceSlotDisplay(
+        //     this.clothes.getArmatureKey(),
+        //     "clothes03",
+        //     "clothes03",
+        //     "clothes03",
+        //     this.robot.armature().getSlot("clothes01")
+        // );
 
         this.eye.armatureName = 'eye03'
         factory.replaceSlotDisplay(
@@ -49,5 +56,8 @@ cc.Class({
             "eye03",
             this.robot.armature().getSlot("eye01")
         );
+        // this.robot.armature().getSlot("eye01").childArmature = factory.buildArmature('eye03')
+
+        this.robot.animationName = 'wait'
     },
 });
